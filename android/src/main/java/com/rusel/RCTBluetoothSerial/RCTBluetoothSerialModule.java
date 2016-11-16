@@ -65,7 +65,7 @@ public class RCTBluetoothSerialModule extends ReactContextBaseJavaModule {
             bluetoothSerialService = new RCTBluetoothSerialService(this);
         }
 
-        if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
+        if (bluetoothAdapter.isEnabled()) {
             sendEvent(_reactContext, "bluetoothEnabled", null);
         } else {
             sendEvent(_reactContext, "bluetoothDisabled", null);
@@ -131,12 +131,10 @@ public class RCTBluetoothSerialModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void list(Promise promise) {
         WritableArray deviceList = Arguments.createArray();
-        if (bluetoothAdapter != null) {
-            Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
+        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
 
-            for (BluetoothDevice device : bondedDevices) {
-                deviceList.pushMap(deviceToWritableMap(device));
-            }
+        for (BluetoothDevice device : bondedDevices) {
+            deviceList.pushMap(deviceToWritableMap(device));
         }
         promise.resolve(deviceList);
     }
@@ -178,11 +176,7 @@ public class RCTBluetoothSerialModule extends ReactContextBaseJavaModule {
         Activity activity = getCurrentActivity();
         activity.registerReceiver(discoverReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
         activity.registerReceiver(discoverReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
-        if (bluetoothAdapter != null) {
-            bluetoothAdapter.startDiscovery();
-        } else {
-            promise.resolve(Arguments.createArray());
-        }
+        bluetoothAdapter.startDiscovery();
     }
 
     @ReactMethod
@@ -195,7 +189,7 @@ public class RCTBluetoothSerialModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void enable(Promise promise) {
-        if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled()) {
+        if (!bluetoothAdapter.isEnabled()) {
             bluetoothAdapter.enable();
         }
         promise.resolve(true);
@@ -203,7 +197,7 @@ public class RCTBluetoothSerialModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void disable(Promise promise) {
-        if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
+        if (bluetoothAdapter.isEnabled()) {
             bluetoothAdapter.disable();
         }
         promise.resolve(true);
@@ -212,15 +206,11 @@ public class RCTBluetoothSerialModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void connect(String id, Promise promise) {
         mConnectedPromise = promise;
-        if (bluetoothAdapter != null) {
-            BluetoothDevice device = bluetoothAdapter.getRemoteDevice(id);
-            if (device != null) {
-                bluetoothSerialService.connect(device, true);
-            } else {
-                promise.reject("Could not connect to " + id);
-            }
+        BluetoothDevice device = bluetoothAdapter.getRemoteDevice(id);
+        if (device != null) {
+            bluetoothSerialService.connect(device, true);
         } else {
-            promise.resolve(true);
+            promise.reject("Could not connect to " + id);
         }
     }
 
@@ -233,8 +223,8 @@ public class RCTBluetoothSerialModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void writeToDevice(String message, Promise promise) {
         Log.d(TAG, "Write " + message);
-        byte[] data = Base64.decode(message, Base64.DEFAULT);
-        bluetoothSerialService.write(data);
+        //byte[] data = Base64.decode(message, Base64.DEFAULT);
+        bluetoothSerialService.write(message);
         promise.resolve(true);
     }
 
@@ -259,11 +249,7 @@ public class RCTBluetoothSerialModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void isEnabled(Promise promise) {
-        if (bluetoothAdapter != null) {
-            promise.resolve(bluetoothAdapter.isEnabled());
-        } else {
-            promise.resolve(false);
-        }
+        promise.resolve(bluetoothAdapter.isEnabled());
     }
 
     @ReactMethod
@@ -293,9 +279,7 @@ public class RCTBluetoothSerialModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void setAdapterName(String newName, Promise promise) {
-        if (bluetoothAdapter != null) {
-            bluetoothAdapter.setName(newName);
-        }
+        bluetoothAdapter.setName(newName);
         promise.resolve(true);
     }
 
