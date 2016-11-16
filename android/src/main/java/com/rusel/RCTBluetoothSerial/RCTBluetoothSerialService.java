@@ -191,12 +191,24 @@ public class RCTBluetoothSerialService {
         setState(STATE_NONE);
     }
 
+    public byte[] hexStr2Bytes(String src) {
+        String[] src_sp = src.split(" ");
+        Log.v("Src", src);
+        byte[] ret = new byte[src_sp.length];
+
+        for(int i = 0; i < src_sp.length; ++i) {
+            ret[i] = Integer.decode("0x" + src_sp[i]).byteValue();
+        }
+
+        return ret;
+    }
+
     /**
      * Write to the ConnectedThread in an unsynchronized manner
      * @param out The bytes to write
      * @see ConnectedThread#write(byte[])
      */
-    public void write(byte[] out) {
+    public void write(String hex) {
         // Create temporary object
         ConnectedThread r;
         Log.d(TAG, "Write in service, state is " + STATE_CONNECTED);
@@ -207,7 +219,7 @@ public class RCTBluetoothSerialService {
             r = mConnectedThread;
         }
         // Perform the write unsynchronized
-        r.write(out);
+        r.write(hexStr2Bytes(hex));
     }
 
     /**
@@ -465,6 +477,7 @@ public class RCTBluetoothSerialService {
             try {
                 String str = new String(buffer, "UTF-8");
                 Log.d(TAG, "Write in thread " + str);
+
                 mmOutStream.write(buffer);
 
                 // Share the sent message back to the UI Activity
@@ -482,5 +495,6 @@ public class RCTBluetoothSerialService {
                 Log.e(TAG, "close() of connect socket failed", e);
             }
         }
+        
     }
 }
